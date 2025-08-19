@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoConsumo - Avaliação de Produtos Sustentáveis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2e7d32;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        input {
+            padding: 5px;
+            margin: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EcoConsumo - Avaliação de Produtos Sustentáveis</h1>
+        <div id="error-message" class="error"></div>
+
+        <p>Insira o código de barras de um produto para avaliar seu impacto ecológico usando Open Food Facts.</p>
+        <input type="text" id="barcode-input" placeholder="Exemplo: 7891000100103">
+        <button id="avaliar-btn">Avaliar</button>
+        <p>Exemplo: Use códigos como 7891000100103 para produtos reais.</p>
+
+        <div id="result">
+            <p>Código de Barras: <span id="barcode"></span></p>
+            <p>Nome do Produto: <span id="product-name"></span></p>
+            <p>Eco-Score: <span id="eco-score"></span></p>
+            <p>Descrição do Eco-Score: <span id="eco-score-description"></span></p>
+            <p>Avaliação Personalizada: <span id="custom-evaluation"></span>/10</p>
+            <button id="back-btn" style="display: none;" onclick="window.location.href='/'">Voltar para a página inicial</button>
+        </div>
+
+        <script>
+            document.getElementById('avaliar-btn').addEventListener('click', function() {
+                var barcode = document.getElementById('barcode-input').value.replace(" ", "");
+                if (!barcode) {
+                    document.getElementById('error-message').textContent = 'Por favor, insira um código de barras.';
+                    document.getElementById('error-message').style.display = 'block';
+                    return;
+                }
+
+                fetch('/products/' + barcode)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erro na requisição');
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('error-message').style.display = 'none';
+                        document.getElementById('barcode').textContent = data.barcode;
+                        document.getElementById('product-name').textContent = data.name || 'Nome desconhecido';
+                        document.getElementById('eco-score').textContent = data.eco_score || 'Não disponível';
+                        document.getElementById('eco-score-description').textContent = data.eco_score_description || 'Sem descrição';
+                        document.getElementById('custom-evaluation').textContent = data.custom_evaluation || 'N/A';
+                        document.getElementById('result').style.display = 'block';
+                        document.getElementById('back-btn').style.display = 'inline-block';
+                    })
+                    .catch(error => {
+                        document.getElementById('error-message').textContent = 'Não foi possível conectar ao servidor ou houve um erro de rede.';
+                        document.getElementById('error-message').style.display = 'block';
+                        document.getElementById('result').style.display = 'none';
+                    });
+            });
+        </script>
+    </div>
+</body>
+</html>
